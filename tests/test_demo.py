@@ -237,6 +237,81 @@ class TestUniformDataLifetime(unittest.TestCase):
         # obj = LocalExperiment( Parameters(**para) )
         # obj.main()
 
+class TestLinuxDdReqscaleAndDataLifetime(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "LinuxDdWrite"
+
+        para = experiment.get_shared_nolist_para_dict(expname="linux-dd-exp",
+                                                      lbabytes=10240*MB)
+        para.update(
+            {
+                'device_path': "/dev/loop0",
+                'ftl' : 'ftlcounter',
+                'enable_simulation': True,
+                'dump_ext4_after_workload': True,
+                'only_get_traffic': False,
+                'trace_issue_and_complete': True,
+            })
+
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment( Parameters(**para) )
+        obj.main()
+
+
+class TestCFileWrite(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "CWriteTest"
+
+        para = experiment.get_shared_nolist_para_dict(expname="c-write-test",
+                                                      lbabytes=1024*MB)
+        para.update(
+            {
+                'device_path': "/dev/sdc1",
+                'ftl' : 'ftlcounter',
+                'enable_simulation': True,
+                'dump_ext4_after_workload': True,
+                'only_get_traffic': False,
+                'trace_issue_and_complete': True,
+            })
+
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment( Parameters(**para) )
+        obj.main()
+
+class TestCFileReadLocality(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(expname="c-read-test-locality", 
+                                            trace_expnames=['c-read-with-preparation'],
+                                            rule="locality"):
+            experiment.execute_simulation(para)
+
+class TestCFileRead(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['age_workload_class'] = "CWriteTest"
+                self.conf['workload_class'] = "CReadTest"
+
+        para = experiment.get_shared_nolist_para_dict(
+                        expname="c-read-with-preparation",
+                        lbabytes=1024*MB)
+        para.update(
+            {
+                'device_path': "/dev/sdc1",
+                'ftl' : 'ftlcounter',
+                'enable_simulation': True,
+                'dump_ext4_after_workload': True,
+                'only_get_traffic': False,
+                'trace_issue_and_complete': True,
+            })
+
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment( Parameters(**para) )
+        obj.main()
 
 if __name__ == '__main__':
     unittest.main()

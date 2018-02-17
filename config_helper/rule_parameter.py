@@ -112,7 +112,7 @@ class LocalityParaIter(object):
 
     def __iter__(self):
         if self.coverage == 'large':
-            coverage_ratios = [0.1, 0.5, 1]
+            coverage_ratios = [0.01, 0.05, 0.1, 0.5, 1]
         elif self.coverage == 'small':
             coverage_ratios = [0.05, 0.01]
 
@@ -130,7 +130,7 @@ class LocalityParaIter(object):
                 'enable_blktrace'     : False,
                 'enable_simulation'   : True,
                 'segment_bytes'       : 2*GB,
-                'over_provisioning': 32, # 1.28 is a good number
+                'over_provisioning': 1.28, # 1.28 is a good number
                 'gc_high_ratio'    : 0.9,
                 'gc_low_ratio'     : 0.8,
                 'snapshot_interval': 1*SEC,

@@ -101,4 +101,44 @@ class SimpleRandReadWrite(Workload):
     # def stop(self):
         # pass
 
+class LinuxDdWrite(Workload):
+    def __init__(self, confobj, workload_conf_key = None):
+        super(LinuxDdWrite, self).__init__(confobj, workload_conf_key)
 
+    def run(self):
+        mnt = self.conf["fs_mount_point"]
+        cmd = "dd if=/dev/zero of={}/datafile bs=64k count=128".format(mnt)
+        print cmd
+        subprocess.call(cmd, shell=True)
+        subprocess.call("sync")
+
+    def stop(self):
+        pass
+
+class CReadTest(Workload):
+    def __init__(self, confobj, workload_conf_key = None):
+        super(CReadTest, self).__init__(confobj, workload_conf_key)
+
+    def run(self):
+        mnt = self.conf["fs_mount_point"]
+        cmd = "/users/karant/wiscsee/workloads/CReadTest {}/datafile".format(mnt)
+        print cmd
+        subprocess.call(cmd, shell=True)
+        subprocess.call("sync")
+
+    def stop(self):
+        pass
+
+class CWriteTest(Workload):
+    def __init__(self, confobj, workload_conf_key = None):
+        super(CWriteTest, self).__init__(confobj, workload_conf_key)
+
+    def run(self):
+        mnt = self.conf["fs_mount_point"]
+        cmd = "/users/karant/wiscsee/workloads/CWriteTest {}/datafile".format(mnt)
+        print cmd
+        subprocess.call(cmd, shell=True)
+        subprocess.call("sync")
+
+    def stop(self):
+        pass
