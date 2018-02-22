@@ -115,6 +115,20 @@ class LinuxDdWrite(Workload):
     def stop(self):
         pass
 
+class CReadTestSeq(Workload):
+    def __init__(self, confobj, workload_conf_key = None):
+        super(CReadTestSeq, self).__init__(confobj, workload_conf_key)
+
+    def run(self):
+        mnt = self.conf["fs_mount_point"]
+        cmd = "/users/karant/wiscsee/workloads/CReadTestSeq {}/datafile".format(mnt)
+        print cmd
+        subprocess.call(cmd, shell=True)
+        subprocess.call("sync")
+
+    def stop(self):
+        pass
+
 class CReadTest(Workload):
     def __init__(self, confobj, workload_conf_key = None):
         super(CReadTest, self).__init__(confobj, workload_conf_key)
@@ -136,6 +150,18 @@ class CWriteTest(Workload):
     def run(self):
         mnt = self.conf["fs_mount_point"]
         cmd = "/users/karant/wiscsee/workloads/CWriteTest {}/datafile".format(mnt)
+        print cmd
+        subprocess.call(cmd, shell=True)
+        subprocess.call("sync")
+
+
+class CGroupingTest(Workload):
+    def __init__(self, confobj, workload_conf_key = None):
+        super(CGroupingTest, self).__init__(confobj, workload_conf_key)
+
+    def run(self):
+        mnt = self.conf["fs_mount_point"]
+        cmd = "/users/karant/wiscsee/workloads/CGroupingTest {}".format(mnt)
         print cmd
         subprocess.call(cmd, shell=True)
         subprocess.call("sync")

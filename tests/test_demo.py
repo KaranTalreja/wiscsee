@@ -282,12 +282,43 @@ class TestCFileWrite(unittest.TestCase):
         obj = LocalExperiment( Parameters(**para) )
         obj.main()
 
+class TestCFileReadLocalitySeq(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(expname="c-read-seq-test-locality", 
+                                            trace_expnames=['c-read-seq-with-preparation'],
+                                            rule="locality"):
+            experiment.execute_simulation(para)
+
 class TestCFileReadLocality(unittest.TestCase):
     def test(self):
         for para in rule_parameter.ParaDict(expname="c-read-test-locality", 
                                             trace_expnames=['c-read-with-preparation'],
                                             rule="locality"):
             experiment.execute_simulation(para)
+
+class TestCFileReadSeq(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['age_workload_class'] = "CWriteTest"
+                self.conf['workload_class'] = "CReadTestSeq"
+
+        para = experiment.get_shared_nolist_para_dict(
+                        expname="c-read-seq-with-preparation",
+                        lbabytes=1024*MB)
+        para.update(
+            {
+                'device_path': "/dev/sdc1",
+                'ftl' : 'ftlcounter',
+                'enable_simulation': True,
+                'dump_ext4_after_workload': True,
+                'only_get_traffic': False,
+                'trace_issue_and_complete': True,
+            })
+
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment( Parameters(**para) )
+        obj.main()
 
 class TestCFileRead(unittest.TestCase):
     def test_run(self):
@@ -312,6 +343,35 @@ class TestCFileRead(unittest.TestCase):
         Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
         obj = LocalExperiment( Parameters(**para) )
         obj.main()
+
+class TestCGroupingInt(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "CGroupingTest"
+
+        para = experiment.get_shared_nolist_para_dict(expname="c-grouping-test-int",
+                                                      lbabytes=1024*MB)
+        para.update(
+            {
+                'device_path': "/dev/sdc1",
+                'ftl' : 'ftlcounter',
+                'enable_simulation': True,
+                'dump_ext4_after_workload': True,
+                'only_get_traffic': False,
+                'trace_issue_and_complete': True,
+            })
+
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment( Parameters(**para) )
+        obj.main()
+
+class TestCGrouping(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(expname="c-grouping-test",
+                                            trace_expnames=['c-grouping-test-int'],
+                                            rule="grouping"):
+            experiment.execute_simulation(para)
 
 if __name__ == '__main__':
     unittest.main()

@@ -50,8 +50,8 @@ plot <- function(d) {
 
 main <- function() {
     print("Hello")
-
-    snapshots = load_data("./recorder.json")
+    args = commandArgs(trailingOnly = TRUE)
+    snapshots = load_data(args[1])
     d = extract_one_snapshot(snapshots)
     d = organize_data(d)
     plot(d)
