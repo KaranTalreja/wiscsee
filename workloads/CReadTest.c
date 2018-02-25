@@ -19,14 +19,17 @@ int main(int argc, char** argv) {
   pFileLag = fopen(argv[1], "r+");
   size_t Tline = 4096 / 2;
   size_t strideLen = 100;
+  size_t inC = 0, outC = 0;
   if (pFile!=NULL)
   {
-    for (int i = 0; i < LINES; i+= Tline*7) {
+    for (int i = 0; i < LINES && outC < 698; i+= Tline*7) {
+        outC++;
 	fseek(pFile, (Tline)*LINEL*7, SEEK_CUR);
 	b = buffer;
 	fgets (b , LINEL, pFile);
 	printf("%s\n", b);
-	if (i > strideLen*Tline*7) {
+	if (i > strideLen*Tline*7 && inC < 597) {
+           inC++;
            fseek(pFileLag, (Tline)*LINEL*3, SEEK_CUR);
            b = buffer;
            fgets (b , LINEL, pFileLag);
@@ -35,6 +38,7 @@ int main(int argc, char** argv) {
     }
     fclose (pFile);
     fclose (pFileLag);
+    printf("%ld %ld\n", outC, inC);
   }
   return 0;
 }

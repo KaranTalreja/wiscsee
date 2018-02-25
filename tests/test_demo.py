@@ -271,6 +271,7 @@ class TestCFileWrite(unittest.TestCase):
         para.update(
             {
                 'device_path': "/dev/sdc1",
+                'filesystem': "ext4",
                 'ftl' : 'ftlcounter',
                 'enable_simulation': True,
                 'dump_ext4_after_workload': True,
@@ -309,6 +310,7 @@ class TestCFileReadSeq(unittest.TestCase):
         para.update(
             {
                 'device_path': "/dev/sdc1",
+#                'filesystem': "f2fs",
                 'ftl' : 'ftlcounter',
                 'enable_simulation': True,
                 'dump_ext4_after_workload': True,
@@ -334,6 +336,7 @@ class TestCFileRead(unittest.TestCase):
             {
                 'device_path': "/dev/sdc1",
                 'ftl' : 'ftlcounter',
+#                'filesystem': "ext4",
                 'enable_simulation': True,
                 'dump_ext4_after_workload': True,
                 'only_get_traffic': False,
@@ -356,6 +359,7 @@ class TestCGroupingInt(unittest.TestCase):
             {
                 'device_path': "/dev/sdc1",
                 'ftl' : 'ftlcounter',
+                'filesystem': "f2fs",
                 'enable_simulation': True,
                 'dump_ext4_after_workload': True,
                 'only_get_traffic': False,

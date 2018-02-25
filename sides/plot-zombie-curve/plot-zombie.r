@@ -44,7 +44,7 @@ plot <- function(d) {
         xlab('Cumulative Block Size (GB)')
     print(p)
 
-    ggsave("plot.pdf", plot = p, height = 4, width = 4)
+    ggsave("plot.png", plot = p, height = 4, width = 4)
 }
 
 

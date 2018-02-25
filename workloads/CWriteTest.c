@@ -18,6 +18,7 @@ int main(int argc, char** argv) {
     for (int i = 0; i < LINES; i++) {
         sprintf(buffer, "Line : %08d\n", i);
         fputs (buffer ,pFile);
+//	fsync(fileno(pFile));
     }
     fclose (pFile);
   }
