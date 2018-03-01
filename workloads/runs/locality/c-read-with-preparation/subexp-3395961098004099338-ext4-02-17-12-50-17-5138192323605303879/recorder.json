@@ -1,9 +1,0 @@
-{
-    "general_accumulator": {
-        "traffic_size": {
-            "write": 210898944, 
-            "read": 5310464, 
-            "discard": 0
-        }
-    }
-}

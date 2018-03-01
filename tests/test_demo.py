@@ -359,7 +359,7 @@ class TestCGroupingInt(unittest.TestCase):
             {
                 'device_path': "/dev/sdc1",
                 'ftl' : 'ftlcounter',
-                'filesystem': "f2fs",
+                'filesystem': "xfs",
                 'enable_simulation': True,
                 'dump_ext4_after_workload': True,
                 'only_get_traffic': False,
