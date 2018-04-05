@@ -65,7 +65,6 @@ class BlktraceResult(object):
 
         self.__parse_and_add_operation(dic)
         self.__parse_and_add_offset_size(dic)
-
         return dic
 
     def __parse_and_add_operation(self, row):
@@ -122,6 +121,7 @@ class BlktraceResultInMem(object):
         # y - 8MB = x
         # blktrace address - 8MB = event address
         self.padding_bytes = padding_bytes
+	self.deathtime = {};
 
         self.__parse_rawfile()
 
@@ -168,16 +168,24 @@ class BlktraceResultInMem(object):
         row['offset'] = byte_offset
         row['size'] = byte_size
 
+
     def __calculate_pre_wait_time(self, event_table):
         if self.do_sort is True:
             event_table.sort(key = lambda k: float(k['timestamp']))
 
         for i, row in enumerate(event_table):
+	    row['deathtime'] = 0
             if i == 0:
                 row['pre_wait_time'] = 0
                 continue
             row['pre_wait_time'] = float(event_table[i]['timestamp']) - \
                 float(event_table[i-1]['timestamp'])
+   	    for i in range(row['offset'], row['offset']+self.sector_size, self.sector_size):
+   	    	if row["operation"] != 'read' and row["action"] == 'C':
+   	   		if i in self.deathtime.keys():
+   	   			diff = float(row["timestamp"]) - self.deathtime[i]
+   	   			row['deathtime'] = diff
+   	   		self.deathtime[i] = float(row["timestamp"])
             if self.do_sort is True:
                 assert row['pre_wait_time'] >= 0, "data is {}".format(row['pre_wait_time'])
 

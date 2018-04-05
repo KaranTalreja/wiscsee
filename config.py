@@ -256,7 +256,7 @@ class Config(dict):
             "dump_ext4_after_workload"  : True,
 
             "event_file_column_names"    : ['pid', 'action', 'operation', 'offset', 'size',
-                    'timestamp', 'pre_wait_time', 'sync'],
+                    'timestamp', 'pre_wait_time', 'sync', "deathtime"],
 
             "fs_mount_point"        : "/mnt/fsonloop",
             "mnt_opts" : {
