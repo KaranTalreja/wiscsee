@@ -83,6 +83,16 @@ class Config(dict):
         return os.path.join(self['result_dir'],
             'blkparse-events-for-ftlsim-mkfs.txt')
 
+    def get_ftlsim_events_output_path_deathtime(self):
+        "This is the path to output parsed blkparse results with deathtime"
+        return os.path.join(self['result_dir'],
+            'blkparse-events-for-ftlsim-deathtime.txt')
+
+    def get_ftlsim_events_output_path_mkfs_deathtime(self):
+        "This is the path to output parsed blkparse results with deathtime"
+        return os.path.join(self['result_dir'],
+            'blkparse-events-for-ftlsim-mkfs-deathtime.txt')
+
     def byte_to_pagenum(self, offset, force_alignment = True):
         "offset to page number"
         if force_alignment and offset % self['flash_page_size'] != 0:

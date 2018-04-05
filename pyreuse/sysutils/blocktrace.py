@@ -45,7 +45,6 @@ class BlktraceResult(object):
 
             line = self.__create_event_line(row_dict)
             out_file.write( line + '\n' )
-
         out_file.flush()
         os.fsync(out_file)
         out_file.close()
@@ -105,10 +104,11 @@ class BlktraceResultInMem(object):
     Parse blkparse output
     """
     def __init__(self, sector_size, event_file_column_names,
-            raw_blkparse_file_path, parsed_output_path,
+            raw_blkparse_file_path, parsed_output_path, parsed_output_deathtime_path,
             padding_bytes=0, do_sort=True):
         self.raw_blkparse_file_path = raw_blkparse_file_path
         self.parsed_output_path = parsed_output_path
+        self.parsed_output_deathtime_path = parsed_output_deathtime_path
         self.sector_size = sector_size
         self.event_file_column_names = event_file_column_names
         self.do_sort = do_sort
@@ -168,24 +168,25 @@ class BlktraceResultInMem(object):
         row['offset'] = byte_offset
         row['size'] = byte_size
 
+    def __calculate_death_time(self, event_table):
+	for i, row in enumerate(event_table):
+		row['deathtime'] = 0
+		for i in range(row['offset'], row['offset']+row['size'], self.sector_size):
+			if row["operation"] != 'read' and row["action"] == 'C':
+				if i not in self.deathtime:
+					self.deathtime[i] = []
+				self.deathtime[i].append(float(row["timestamp"]))
 
     def __calculate_pre_wait_time(self, event_table):
         if self.do_sort is True:
             event_table.sort(key = lambda k: float(k['timestamp']))
 
         for i, row in enumerate(event_table):
-	    row['deathtime'] = 0
             if i == 0:
                 row['pre_wait_time'] = 0
                 continue
             row['pre_wait_time'] = float(event_table[i]['timestamp']) - \
                 float(event_table[i-1]['timestamp'])
-   	    for i in range(row['offset'], row['offset']+self.sector_size, self.sector_size):
-   	    	if row["operation"] != 'read' and row["action"] == 'C':
-   	   		if i in self.deathtime.keys():
-   	   			diff = float(row["timestamp"]) - self.deathtime[i]
-   	   			row['deathtime'] = diff
-   	   		self.deathtime[i] = float(row["timestamp"])
             if self.do_sort is True:
                 assert row['pre_wait_time'] >= 0, "data is {}".format(row['pre_wait_time'])
 
@@ -205,9 +206,8 @@ class BlktraceResultInMem(object):
 
                 if ret != None:
                     table.append(ret)
-
         table = self.__calculate_pre_wait_time(table)
-
+        self.__calculate_death_time(table)
         self.__parsed_table = table
 
     def __create_event_line(self, line_dict):
@@ -226,10 +226,18 @@ class BlktraceResultInMem(object):
                 raise NotImplementedError()
 
             out.write( line + '\n' )
-
         out.flush()
         os.fsync(out)
         out.close()
+	out = open(self.parsed_output_deathtime_path, 'w')
+        for key, value in sorted(self.deathtime.iteritems()):
+	    out.write("%ld :" % (key));
+	    for v in value:
+                out.write(" %f" % (v))
+            out.write("\n")
+	out.flush()
+	os.fsync(out)
+	out.close()
 
     def get_duration(self):
         return float(self.__parsed_table[-1]['timestamp']) - \
@@ -254,13 +262,14 @@ class BlktraceResultInMem(object):
 class BlockTraceManager(object):
     "This class provides interfaces to interact with blktrace"
     def __init__(self, dev, event_file_column_names,
-            resultpath, to_ftlsim_path, sector_size, padding_bytes=0,
+            resultpath, to_ftlsim_path, to_ftlsim_deathtime_path, sector_size, padding_bytes=0,
             do_sort=True):
         self.dev = dev
         self.sector_size = sector_size
         self.event_file_column_names = event_file_column_names
         self.resultpath = resultpath
         self.to_ftlsim_path = to_ftlsim_path
+        self.to_ftlsim_deathtime_path = to_ftlsim_deathtime_path
         self.sector_size = sector_size
         self.padding_bytes = padding_bytes
         self.do_sort = do_sort
@@ -275,7 +284,7 @@ class BlockTraceManager(object):
         if self.do_sort is True:
             rawparser = BlktraceResultInMem(self.sector_size,
                     self.event_file_column_names,
-                    self.resultpath, self.to_ftlsim_path,
+                    self.resultpath, self.to_ftlsim_path, self.to_ftlsim_deathtime_path,
                     padding_bytes=self.padding_bytes,
                     do_sort=self.do_sort
                     )
@@ -284,7 +293,7 @@ class BlockTraceManager(object):
         else:
             rawparser = BlktraceResult(self.sector_size,
                     self.event_file_column_names,
-                    self.resultpath, self.to_ftlsim_path,
+                    self.resultpath, self.to_ftlsim_path, self.to_ftlsim_deathtime_path,
                     padding_bytes=self.padding_bytes,
                     do_sort=self.do_sort
                     )

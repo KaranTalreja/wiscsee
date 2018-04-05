@@ -47,6 +47,7 @@ class WorkloadRunner(object):
             event_file_column_names =  self.conf['event_file_column_names'],
             resultpath = self.conf.get_blkparse_result_path_mkfs(),
             to_ftlsim_path = self.conf.get_ftlsim_events_output_path_mkfs(),
+            to_ftlsim_deathtime_path = self.conf.get_ftlsim_events_output_path_mkfs_deathtime(),
             sector_size = self.conf['sector_size'],
             padding_bytes = self.conf['dev_padding'],
             do_sort = self.conf['sort_block_trace']
@@ -58,6 +59,7 @@ class WorkloadRunner(object):
             event_file_column_names =  self.conf['event_file_column_names'],
             resultpath = self.conf.get_blkparse_result_path(),
             to_ftlsim_path = self.conf.get_ftlsim_events_output_path(),
+            to_ftlsim_deathtime_path = self.conf.get_ftlsim_events_output_path_deathtime(),
             sector_size = self.conf['sector_size'],
             padding_bytes = self.conf['dev_padding'],
             do_sort = self.conf['sort_block_trace']
