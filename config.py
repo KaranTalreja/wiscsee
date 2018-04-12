@@ -5,6 +5,7 @@ import pprint
 import re
 
 from commons import *
+from predictor import *
 from utilities import utils
 
 WLRUNNER, LBAGENERATOR, LBAMULTIPROC = ('WLRUNNER', 'LBAGENERATOR',
@@ -266,7 +267,9 @@ class Config(dict):
             "dump_ext4_after_workload"  : True,
 
             "event_file_column_names"    : ['pid', 'action', 'operation', 'offset', 'size',
-                    'timestamp', 'pre_wait_time', 'sync', "deathtime"],
+                    'timestamp', 'pre_wait_time', 'sync', 'stream_id'],
+
+            "stream_id_predictor" : auto_stream(),
 
             "fs_mount_point"        : "/mnt/fsonloop",
             "mnt_opts" : {

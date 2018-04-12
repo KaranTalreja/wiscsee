@@ -50,7 +50,8 @@ class WorkloadRunner(object):
             to_ftlsim_deathtime_path = self.conf.get_ftlsim_events_output_path_mkfs_deathtime(),
             sector_size = self.conf['sector_size'],
             padding_bytes = self.conf['dev_padding'],
-            do_sort = self.conf['sort_block_trace']
+            do_sort = self.conf['sort_block_trace'],
+            predictor = self.conf['stream_id_predictor']
             )
 
         # blktracer for running workload
@@ -62,7 +63,8 @@ class WorkloadRunner(object):
             to_ftlsim_deathtime_path = self.conf.get_ftlsim_events_output_path_deathtime(),
             sector_size = self.conf['sector_size'],
             padding_bytes = self.conf['dev_padding'],
-            do_sort = self.conf['sort_block_trace']
+            do_sort = self.conf['sort_block_trace'],
+            predictor = self.conf['stream_id_predictor']
             )
 
         self.aging_workload = eval("workload.{wlclass}(confobj = self.conf, " \
