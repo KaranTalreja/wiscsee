@@ -176,6 +176,7 @@ class BlktraceResultInMem(object):
 				if i not in self.deathtime:
 					self.deathtime[i] = []
 				self.deathtime[i].append(float(row["timestamp"]))
+				self.deathtime[i].append(row["operation"])
 
     def __calculate_pre_wait_time(self, event_table):
         if self.do_sort is True:
@@ -232,8 +233,10 @@ class BlktraceResultInMem(object):
 	out = open(self.parsed_output_deathtime_path, 'w')
         for key, value in sorted(self.deathtime.iteritems()):
 	    out.write("%ld :" % (key));
-	    for v in value:
-                out.write(" %f" % (v))
+	    index = 0
+	    while index < len(value)-1:
+                out.write(" %f,%s" % (value[index], value[index+1]))
+                index += 2
             out.write("\n")
 	out.flush()
 	os.fsync(out)
