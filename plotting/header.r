@@ -107,7 +107,7 @@ scale_zplot <- function()
 
 get_exp_path <- function(expdir)
 {
-    p = paste("/Users/junhe/datahouse/localresults/", expdir, sep='')
+    p = paste("/users/karant/wiscsee/grouping-results/", expdir, sep='')
     return(p)
 }
 
