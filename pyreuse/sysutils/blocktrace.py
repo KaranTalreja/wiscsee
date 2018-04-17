@@ -3,6 +3,7 @@ import re
 import subprocess
 import time
 
+from predictor import *
 from pyreuse.helpers import *
 from pyreuse.macros import *
 
@@ -105,7 +106,7 @@ class BlktraceResultInMem(object):
     """
     def __init__(self, sector_size, event_file_column_names,
             raw_blkparse_file_path, parsed_output_path, parsed_output_deathtime_path,
-            padding_bytes=0, do_sort=True):
+            padding_bytes=0, do_sort=True, predictorClass = None):
         self.raw_blkparse_file_path = raw_blkparse_file_path
         self.parsed_output_path = parsed_output_path
         self.parsed_output_deathtime_path = parsed_output_deathtime_path
@@ -122,6 +123,7 @@ class BlktraceResultInMem(object):
         # blktrace address - 8MB = event address
         self.padding_bytes = padding_bytes
 	self.deathtime = {};
+        self.predictor = predictorClass
 
         self.__parse_rawfile()
 
@@ -170,12 +172,12 @@ class BlktraceResultInMem(object):
 
     def __calculate_death_time(self, event_table):
 	for i, row in enumerate(event_table):
-		row['deathtime'] = 0
 		for i in range(row['offset'], row['offset']+row['size'], self.sector_size):
 			if row["operation"] != 'read' and row["action"] == 'C':
 				if i not in self.deathtime:
 					self.deathtime[i] = []
 				self.deathtime[i].append(float(row["timestamp"]))
+				self.deathtime[i].append(row["operation"])
 
     def __calculate_pre_wait_time(self, event_table):
         if self.do_sort is True:
@@ -192,6 +194,14 @@ class BlktraceResultInMem(object):
 
         return event_table
 
+    def __tag_stream_id(self, event_table):
+	for i, row in enumerate(event_table):
+		row['stream_id'] = -1
+		if self.predictor != None:
+			if row['action'] == 'D':
+				row['stream_id'] = self.predictor.predict(row)
+	return event_table
+
     def __parse_rawfile(self):
         with open(self.raw_blkparse_file_path, 'r') as line_iter:
             table = []
@@ -207,6 +217,7 @@ class BlktraceResultInMem(object):
                 if ret != None:
                     table.append(ret)
         table = self.__calculate_pre_wait_time(table)
+	table = self.__tag_stream_id(table)
         self.__calculate_death_time(table)
         self.__parsed_table = table
 
@@ -232,8 +243,10 @@ class BlktraceResultInMem(object):
 	out = open(self.parsed_output_deathtime_path, 'w')
         for key, value in sorted(self.deathtime.iteritems()):
 	    out.write("%ld :" % (key));
-	    for v in value:
-                out.write(" %f" % (v))
+	    index = 0
+	    while index < len(value)-1:
+                out.write(" %f,%s" % (value[index], value[index+1]))
+                index += 2
             out.write("\n")
 	out.flush()
 	os.fsync(out)
@@ -263,7 +276,7 @@ class BlockTraceManager(object):
     "This class provides interfaces to interact with blktrace"
     def __init__(self, dev, event_file_column_names,
             resultpath, to_ftlsim_path, to_ftlsim_deathtime_path, sector_size, padding_bytes=0,
-            do_sort=True):
+            do_sort=True, predictor=None):
         self.dev = dev
         self.sector_size = sector_size
         self.event_file_column_names = event_file_column_names
@@ -273,6 +286,7 @@ class BlockTraceManager(object):
         self.sector_size = sector_size
         self.padding_bytes = padding_bytes
         self.do_sort = do_sort
+	self.predictor = predictor
 
     def start_tracing_and_collecting(self, trace_filter=None):
         self.proc = start_blktrace_on_bg(self.dev, self.resultpath, trace_filter)
@@ -286,7 +300,8 @@ class BlockTraceManager(object):
                     self.event_file_column_names,
                     self.resultpath, self.to_ftlsim_path, self.to_ftlsim_deathtime_path,
                     padding_bytes=self.padding_bytes,
-                    do_sort=self.do_sort
+                    do_sort=self.do_sort,
+                    predictorClass=self.predictor
                     )
             rawparser.create_event_file()
 

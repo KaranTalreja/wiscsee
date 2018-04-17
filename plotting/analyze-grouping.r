@@ -7,18 +7,17 @@ library(gridExtra)
 library(jsonlite)
 library(digest)
 library(splitstackshape)
-library(gganimate)
 
-source('doraemon/header.r')
-source('doraemon/organizers.r')
-source('doraemon/file_parsers.r')
+source('plotting/header.r')
+source('plotting/organizers.r')
+source('plotting/file_parsers.r')
 
 # copy the following so you can do sme()
 # setwd(WORKDIRECTORY)
 sme <- function()
 {
-    WORKDIRECTORY= "/Users/junhe/workdir/analysis-script/"
-    THISFILE     ='doraemon/analyze-grouping.r'
+    WORKDIRECTORY= "/users/karant/wiscsee/"
+    THISFILE     ='plotting/analyze-grouping.r'
     setwd(WORKDIRECTORY)
     source(THISFILE)
 }
@@ -1289,13 +1288,15 @@ main <- function()
 
             # "grouping-rocksdb-tracesim4",
             # "grouping-leveldb-tracesim4",
-            "rocks_n_level_grouping_no_oos",
-            "grouping-sqlitewal-tracesim4",
-            "grouping-sqliterb-tracesim4",
-            "grouping-varmail-tracesim4"
+            #"rocks_n_level_grouping_no_oos",
+            #"grouping-sqlitewal-tracesim4",
+            #"grouping-sqliterb-tracesim4",
+            "rocksNlevelwrite_reqscale_grouping",
+            "sqliterb_reqscale_grouping",
+            "sqlitewal_reqscale_grouping"
                ))
  
-    print_global_plots(save_to_file=F, w=20, h=20)
+    print_global_plots(save_to_file=T, w=20, h=20)
 }
 
 main()
