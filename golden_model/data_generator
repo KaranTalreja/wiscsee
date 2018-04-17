@@ -1,0 +1,31 @@
+#! /usr/bin/python3
+
+# See LICENSE for license details.
+
+import sys
+import getopt
+import math
+import globals
+import tkinter
+from utilities import *
+
+globals.init()
+
+############################# Main Program Starts ##############################
+
+GetArgs(sys.argv[1:])
+
+TraceParser(globals.input_file)
+
+CreatePhysicalSectors()
+
+CalculateStdDev()
+
+# Sort all the physical sectors
+globals.physical_sectors.sort(key=TimeSortingFunc)
+
+CreateGraph()
+
+#PrintMetaInfo()
+#PrintPhysicalSectors()
+#PrintLogicalSectors()
