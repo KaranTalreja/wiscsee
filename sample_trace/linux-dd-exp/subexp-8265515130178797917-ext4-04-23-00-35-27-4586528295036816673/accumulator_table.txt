@@ -1,0 +1,4 @@
+                           count;                counter.set.name;                    counter.name
+                        59357184;                    traffic_size;                           write
+                         1112064;                    traffic_size;                            read
+                               0;                    traffic_size;                         discard
