@@ -23,6 +23,7 @@ class Host(object):
                 continue
 
             if event.action == 'D':
+		# print("############"+str(event)+"############")
                 yield self._ncq.queue.put(event)
 
     def run(self):

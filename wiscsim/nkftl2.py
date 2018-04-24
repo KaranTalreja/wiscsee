@@ -1843,7 +1843,7 @@ class Ftl(ftlbuilder.FtlBuilder):
 
         yield self.env.process(self.garbage_collector.clean())
 
-    def write_ext(self, extent, data=None):
+    def write_ext(self, extent, data=None, channel_id = 0):
         req_size = extent.lpn_count * self.conf.page_size
         self.recorder.add_to_general_accumulater('traffic', 'write', req_size)
         self.written_bytes += req_size
