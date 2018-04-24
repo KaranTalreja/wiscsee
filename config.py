@@ -267,7 +267,7 @@ class Config(dict):
             "dump_ext4_after_workload"  : True,
 
             "event_file_column_names"    : ['pid', 'action', 'operation', 'offset', 'size',
-                    'timestamp', 'pre_wait_time', 'sync', 'stream_id'],
+                    'timestamp', 'pre_wait_time', 'sync', 'channel_id'],
 
             "stream_id_predictor" : auto_stream(),
 

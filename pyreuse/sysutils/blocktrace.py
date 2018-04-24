@@ -196,10 +196,10 @@ class BlktraceResultInMem(object):
 
     def __tag_stream_id(self, event_table):
 	for i, row in enumerate(event_table):
-		row['stream_id'] = -1
+		row['channel_id'] = -1
 		if self.predictor != None:
 			if row['action'] == 'D':
-				row['stream_id'] = self.predictor.predict(row)
+				row['channel_id'] = self.predictor.predict(row)
 	return event_table
 
     def __parse_rawfile(self):

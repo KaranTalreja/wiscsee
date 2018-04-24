@@ -30,8 +30,7 @@ class ControlEvent(HostEventBase):
 
 class Event(HostEventBase):
     def __init__(self, sector_size, pid, operation, offset, size,
-            timestamp = None, pre_wait_time = None, sync = True, action = 'D',
-	    stream_id = 0):
+            timestamp = None, pre_wait_time = None, sync = True, action = 'D', channel_id = 0):
         self.pid = int(pid)
         self.operation = operation
         self.offset = int(offset)
@@ -40,7 +39,7 @@ class Event(HostEventBase):
         self.timestamp = timestamp
         self.pre_wait_time = pre_wait_time
         self.action = action
-	self.stream_id = stream_id
+	self.channel_id = channel_id
         assert action in ('D', 'C'), "action:{}".format(action)
 
         assert self.offset % sector_size == 0,\
@@ -68,12 +67,12 @@ class Event(HostEventBase):
     def __str__(self):
         return "Event pid:{pid}, operation:{operation}, offset:{offset}, "\
                 "size:{size}, sector:{sector}, sector_count:{sector_count}, "\
-                "sync:{sync}, timestamp:{timestamp}, action:{action}, stream_id:{stream_id}"\
+                "sync:{sync}, timestamp:{timestamp}, action:{action}, channel_id:{channel_id}"\
                 .format(pid = self.pid, operation = self.operation,
                         offset = self.offset, size = self.size,
                         sector = self.sector, sector_count = self.sector_count,
                         sync = self.sync, timestamp = self.timestamp,
-                        action = self.action, stream_id = self.stream_id)
+                        action = self.action, channel_id = self.channel_id)
 
 
 class FileLineIterator(object):
