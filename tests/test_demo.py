@@ -377,6 +377,13 @@ class TestCGrouping(unittest.TestCase):
                                             rule="grouping"):
             experiment.execute_simulation(para)
 
+class TestLinuxDdGrouping(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(expname="linux-dd-grouping", 
+                                            trace_expnames=['linux-dd-exp'],
+                                            rule="grouping"):
+            experiment.execute_simulation(para)
+
 if __name__ == '__main__':
     unittest.main()
 

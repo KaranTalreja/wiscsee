@@ -87,7 +87,7 @@ class Ssd(SsdBase):
     def _process(self, pid):
         for req_i in itertools.count():
             host_event = yield self.ncq.queue.get()
-
+	    print("########"+str(host_event)+"########")
             slot_req = self.ncq.slots.request()
             yield slot_req
 
@@ -218,7 +218,7 @@ class Ssd(SsdBase):
 
             elif  operation == OP_WRITE:
                 yield self.env.process(
-                    self.ftl.write_ext(host_event.get_lpn_extent(self.conf)))
+                    self.ftl.write_ext(host_event.get_lpn_extent(self.conf), channel_id=host_event.channel_id))
 
             elif  operation == OP_DISCARD:
                 yield self.env.process(

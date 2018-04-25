@@ -141,13 +141,13 @@ class Ftl(object):
 
         return ppns
 
-    def get_ppns_to_write(self, ext):
+    def get_ppns_to_write(self, ext, channel_id = 0):
         exts_by_seg = split_ext_by_segment(self.conf.n_pages_per_segment, ext)
         mapping = {}
         for seg_id, seg_ext in exts_by_seg.items():
             ppns = self.block_pool.next_n_data_pages_to_program_striped(
                     n=seg_ext.lpn_count, seg_id=seg_id,
-                    choice=LEAST_ERASED)
+                    choice=LEAST_ERASED, channel_id = channel_id)
             mapping.update( dict(zip(seg_ext.lpn_iter(), ppns)) )
         return mapping
 
@@ -161,7 +161,7 @@ class Ftl(object):
         yield self.env.process(self._mappings.flush())
         self._mappings.drop()
 
-    def write_ext(self, extent):
+    def write_ext(self, extent, channel_id = 0):
         req_size = extent.lpn_count * self.conf.page_size
         self.recorder.add_to_general_accumulater('traffic', 'write', req_size)
         self.written_bytes += req_size
@@ -174,8 +174,8 @@ class Ftl(object):
         start_time = self.env.now # <----- start
 
         exts_in_mvpngroup = split_ext_to_mvpngroups(self.conf, extent)
-        new_mappings = self.get_ppns_to_write(extent)
-
+        new_mappings = self.get_ppns_to_write(extent, channel_id)
+	print("********"+str(extent)+" "+str(channel_id)+"********")
         procs = []
         for ext_single_m_vpn in exts_in_mvpngroup:
             ppns_of_ext = self._ppns_to_write(ext_single_m_vpn, new_mappings)
