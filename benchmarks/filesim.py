@@ -221,7 +221,7 @@ class GroupingParaIter(object):
         if rwmode == 'r':
             raise StopIteration
 
-        for segment_bytes in [128*MB]: #, 2*GB
+        for segment_bytes in [128*MB ,2*GB]:
             local_dict.update({
                 'ftl': 'dftldes',
                 'ssd_ncq_depth'  : 1,
@@ -231,7 +231,7 @@ class GroupingParaIter(object):
                 'enable_blktrace': False,
                 'enable_simulation': True,
                 'segment_bytes'  : segment_bytes,
-                'over_provisioning': 8, # 1.28 is a good number
+                'over_provisioning': 32, # 1.28 is a good number
                 'gc_high_ratio'    : 0.9,
                 'gc_low_ratio'     : 0.8,
                 'not_check_gc_setting': True,

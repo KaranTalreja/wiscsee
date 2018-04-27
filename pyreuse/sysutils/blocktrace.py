@@ -172,7 +172,7 @@ class BlktraceResultInMem(object):
 
     def __calculate_death_time(self, event_table):
 	for i, row in enumerate(event_table):
-		for i in range(row['offset'], row['offset']+row['size'], self.sector_size):
+		for i in range(row['offset'], row['offset']+row['size'], self.sector_size*8):
 			if row["operation"] != 'read' and row["action"] == 'C':
 				if i not in self.deathtime:
 					self.deathtime[i] = []
@@ -196,7 +196,7 @@ class BlktraceResultInMem(object):
 
     def __tag_stream_id(self, event_table):
 	for i, row in enumerate(event_table):
-		row['channel_id'] = -1
+		row['channel_id'] = 0
 		if self.predictor != None:
 			if row['action'] == 'D':
 				row['channel_id'] = self.predictor.predict(row)
@@ -211,11 +211,17 @@ class BlktraceResultInMem(object):
                 if is_data_line(line):
                     ret = self.__line_to_dic(line)
                     ret['type'] = 'blkparse'
+		    if ret['operation'] == 'read':
+		        ret = None
                 else:
                     ret = None
 
                 if ret != None:
-                    table.append(ret)
+                    for i in range(0, ret['size'], self.sector_size*8):
+			temp = dict(ret)
+			temp['size'] = self.sector_size*8
+			temp['offset'] = ret['offset'] + i
+                    	table.append(temp)
         table = self.__calculate_pre_wait_time(table)
 	table = self.__tag_stream_id(table)
         self.__calculate_death_time(table)

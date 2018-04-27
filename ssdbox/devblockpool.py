@@ -217,14 +217,15 @@ class MultiChannelBlockPool(MultiChannelBlockPoolBase):
         ret_ppns = []
         empty_channels = set()
         while remaining > 0:
-            req = min(remaining, stripe_size)
+            req = remaining
             ppns = self._next_ppns_in_channel(
                     channel_id=int(channel_id),#cur_channel_id,
                     n=req, tag=tag, block_index=block_index,
                     choice=choice)
             if len(ppns) == 0:
+	        raise TagOutOfSpaceError
                 # channel out of space
-                empty_channels.add(cur_channel_id)
+                empty_channels.add(channel_id)
 
             ppns = self._ppns_channel_to_global(int(channel_id), ppns)
             ret_ppns.extend(ppns)

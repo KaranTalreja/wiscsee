@@ -269,7 +269,7 @@ class Config(dict):
             "event_file_column_names"    : ['pid', 'action', 'operation', 'offset', 'size',
                     'timestamp', 'pre_wait_time', 'sync', 'channel_id'],
 
-            "stream_id_predictor" : auto_stream(),
+            "stream_id_predictor" : markov_predictor(8, 1, [1,2,4,8, 16, 32, 64]),
 
             "fs_mount_point"        : "/mnt/fsonloop",
             "mnt_opts" : {

@@ -27,7 +27,7 @@ will be 0,0,1,1,2,2,...
 Further assume 0 being the hottest queue and num_of_channel-1 as
 the coldest queue. Always assign the data to be the coldest queue
 """
-class rr_predictor:
+class rr_predictor(dict):
 	def __init__(self, num_of_channel, stride):
 		self.num_of_channel = int(num_of_channel)
 		self.curr_channel = 0
@@ -42,6 +42,8 @@ class rr_predictor:
 		else:
 			self.stride_cnt += 1
 		return predicted_channel
+	def __str__(self):
+		return self["name"]
 
 """
 simple markov predictor
@@ -53,7 +55,7 @@ the counter towards the right direction until it can stablize
 Further assume 0 being the hottest queue and num_of_channel-1 as
 the coldest queue. Always assign the data to be the coldest queue
 """
-class markov_pred_object:
+class markov_pred_object(dict):
 	def __init__(self, initial_channel, last_access_time, hysteresis):
 		# a mapping between LBA and last access time
 		self.last_access_time = last_access_time
@@ -86,12 +88,15 @@ class markov_pred_object:
 	def get_prediction(self):
 		return self.predict_channel
 
+	def __str__(self):
+		return self["name"]
+
 # channel boundary is the boundary to determine which channel is the ideal one
 # format [a,b,c,d,e,...]
 # |--ch0--|--ch1--|--ch2--|...
 #         a       b       c...
 
-class markov_predictor:
+class markov_predictor(dict):
 	def __init__(self, num_of_channel, hysteresis, channel_boundary):
 		# a mapping between LBA and prediction
 		self.pred_history = {}
@@ -101,9 +106,8 @@ class markov_predictor:
 		assert len(channel_boundary) == num_of_channel - 1
 
 	def predict(self, event_row):
-		tokens = event_row.split(" ")
-		addr = int(tokens[3])
-		access_time = float(tokens[5])
+		addr = (int(event_row["offset"]) >> 20)
+		access_time = float(event_row["timestamp"])
 		pred_entry = self.pred_history.get(addr)
 		if pred_entry == None:
 			self.pred_history.update({addr:markov_pred_object(self.num_of_channel - 1, access_time, self.hysteresis_threshold)})
@@ -119,6 +123,9 @@ class markov_predictor:
 					correct_channel += 1
 			pred_entry.update_predictor(correct_channel, access_time)
 			return pred_entry.get_prediction()
+
+	def __str__(self):
+		return self["name"]
 
 # pred = markov_predictor(5, 1, [1,2,3,4])
 # print(pred.predict("0 0 0 1024 2048 1.000 0 0"))
@@ -151,7 +158,7 @@ Further assume 0 being the hottest queue and num_of_channel-1 as
 the coldest queue. Always assign the data to be the coldest queue
 """
 
-class ppm_predictor:
+class ppm_predictor(dict):
 	def __init__(self, num_of_channel, ctx_length):
 		self.ctx_length = ctx_length
 		self.table = [dict() for i in range(ctx_length+2)] # {-1, ..., ctx_length}
@@ -195,6 +202,9 @@ class ppm_predictor:
 	    	self.history = self.history[1:] + str(c)
 	    else:
 	    	self.history = self.history + str(c)
+
+	def __str__(self):
+		return self["name"]
 
 
 # msg = '01201201201201201232432432412012324'

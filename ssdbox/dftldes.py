@@ -175,7 +175,7 @@ class Ftl(object):
 
         exts_in_mvpngroup = split_ext_to_mvpngroups(self.conf, extent)
         new_mappings = self.get_ppns_to_write(extent, channel_id)
-	print("********"+str(extent)+" "+str(channel_id)+"********")
+	#print("********"+str(extent)+" "+str(channel_id)+"********")
         procs = []
         for ext_single_m_vpn in exts_in_mvpngroup:
             ppns_of_ext = self._ppns_to_write(ext_single_m_vpn, new_mappings)

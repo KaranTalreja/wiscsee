@@ -89,7 +89,7 @@ class Ssd(SsdBase):
     def _process(self, pid):
         for req_i in itertools.count():
             host_event = yield self.ncq.queue.get()
-	    print("########"+str(host_event)+"########")
+	    #print("########"+str(host_event)+"########")
             slot_req = self.ncq.slots.request()
             yield slot_req
 
