@@ -24,8 +24,10 @@ CalculateStdDev()
 # Sort all the physical sectors
 globals.physical_sectors.sort(key=TimeSortingFunc)
 
-CreateGraph()
+CreateQueues()
+
+#CreateGraph()
 
 #PrintMetaInfo()
-#PrintPhysicalSectors()
+PrintPhysicalSectors()
 #PrintLogicalSectors()

@@ -22,6 +22,7 @@ class SectorInfo():
         self.operation_times = []
         self.operation_type = []
         self.life_times = []
+        self.queue_num = []
         self.std_dev = 0
 
 # Info for each physical sector
@@ -33,6 +34,15 @@ class PhysicalSectorInfo():
         self.birth_time = 0
         self.death_time = 0
         self.life_time = 0
+
+# Info for each physical sector
+class QueueInfo():
+
+    def __init__(self):
+        self.sectors_list = []
+        self.max_death_time = 0
+        self.mean_death_time = 0
+        self.size = 0
 
 ############################# Function Defines #################################
 
@@ -73,7 +83,7 @@ def GetArgs(argv):
         elif opt in ("-t", "--globals.total_size"):
             globals.total_size = arg
         elif opt in ("-q", "--queue_entries"):
-            queue_entries = arg
+            globals.queue_entries = arg
     if not found_input_file:
         print ("ERROR: -i was not given")
         sys.exit(2)
@@ -98,6 +108,8 @@ def TraceParser(filename):
 # Also this will add lifetimes to the logical sectors
 def CreatePhysicalSectors():
 
+    physical_addr = 0
+
     for logical_sector in range(len(globals.sectors)):
         for physical_sector in \
                 range(len(globals.sectors[logical_sector].operation_times)):
@@ -106,6 +118,9 @@ def CreatePhysicalSectors():
                 globals.physical_sectors.append(PhysicalSectorInfo())
                 globals.physical_sectors[-1].logical_sector_addr = \
                     globals.sectors[logical_sector].sector_addr
+                globals.physical_sectors[-1].physical_sector_addr = \
+                    physical_addr
+                physical_addr = physical_addr + 1
                 globals.physical_sectors[-1].birth_time = \
                     globals.sectors[logical_sector].operation_times\
                     [physical_sector]
@@ -120,10 +135,10 @@ def CreatePhysicalSectors():
                 globals.physical_sectors[-1].life_time = \
                         globals.physical_sectors[-1].death_time - \
                         globals.physical_sectors[-1].birth_time
-                if globals.physical_sectors[-1].death_time != math.inf:
-                    globals.sectors[logical_sector].life_times.append(\
-                        globals.physical_sectors[-1].death_time - \
-                        globals.physical_sectors[-1].birth_time)
+                #if globals.physical_sectors[-1].death_time != math.inf:
+                globals.sectors[logical_sector].life_times.append(\
+                    globals.physical_sectors[-1].death_time - \
+                    globals.physical_sectors[-1].birth_time)
 
 # Calculate standard deviation for all sectors
 def CalculateStdDev():
@@ -135,6 +150,8 @@ def CalculateStdDev():
 # Function for sorting physical sectors based on the creation time
 def TimeSortingFunc(elem):
     return elem.birth_time
+
+# Queue Allocation Function
 
 # Printing Debug Functions
 def PrintPhysicalSectors():
@@ -182,16 +199,82 @@ def CreateGraph():
     plt.title(file_name[0])
     plt.savefig(plot_name)
 
+def FindTimeRange():
+
+    min_time = math.inf
+    max_time = 0
+
+    for logical_sector in range(len(globals.sectors)):
+
+        if len(globals.sectors[logical_sector].life_times) > 0:
+
+            for time in range(len(globals.sectors[logical_sector].life_times)):
+                if (globals.sectors[logical_sector].life_times[time] \
+                        > max_time) & \
+                        (globals.sectors[logical_sector].life_times[time] != \
+                        math.inf):
+                    max_time = globals.sectors[logical_sector].life_times[time]
+            if min(globals.sectors[logical_sector].life_times) < min_time:
+                min_time = min(globals.sectors[logical_sector].life_times)
+
+        globals.max_life_time = max_time
+        globals.min_life_time = min_time
+
+def AllocateGoldenQueues():
+
+    life_time_range = globals.max_life_time - globals.min_life_time
+    queue_step = life_time_range/(globals.queue_entries - 1)
+
+    for logical_sector in range(len(globals.sectors)):
+
+        if len(globals.sectors[logical_sector].life_times) > 0:
+            for time in range(len(globals.sectors[logical_sector].life_times)):
+                current_life_time = \
+                    globals.sectors[logical_sector].life_times[time]
+                allocated_queue = 0
+                if current_life_time == math.inf:
+                    allocated_queue = globals.queue_entries - 1
+                else:
+                    allocated_queue = math.floor(current_life_time/queue_step)
+                globals.sectors[logical_sector].queue_num.append(allocated_queue)
+
+def CreateQueues():
+
+    for x in range(int(globals.queue_entries)):
+        globals.queue_list.append(QueueInfo())
+
+def FindEmptyQueue():
+
+    empty_queue_list = []
+
+    for x in range(int(globals.queue_entries)):
+        if globals.queue_list[x].size == 0:
+            empty_queue_list.append(x)
+
+    return empty_queue_list
+
+def PrintAllocatedQueues():
+    for x in range(len(globals.sectors)):
+        print(globals.sectors[x].sector_addr, end="")
+        print(": ", end="")
+        for y in range(len(globals.sectors[x].queue_num)):
+            print(globals.sectors[x].queue_num[y], end="")
+            print(" ", end="")
+        print("")
+
 def PrintLogicalSectors():
     for x in range(len(globals.sectors)):
         print ("sector_addr = %s" % globals.sectors[x].sector_addr)
         print ("operation_times = %s" % globals.sectors[x].operation_times)
         print ("operations = %s" % globals.sectors[x].operation_type)
         print ("life_times = %s" % globals.sectors[x].life_times)
+        print ("allocated_queues = %s" % globals.sectors[x].queue_num)
         print ("life_time_std_dev = %s" % globals.sectors[x].std_dev)
 
 def PrintMetaInfo():
     print (globals.sector_size, globals.block_size, globals.sectors_per_block)
     print ("number of logical sectors = %s" % len(globals.sectors))
     print ("number of physical sectors = %s" % len(globals.physical_sectors))
+    print ("number of max_time = %s" % globals.max_life_time)
+    print ("number of min_time = %s" % globals.min_life_time)
 
