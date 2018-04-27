@@ -9,12 +9,14 @@ import math
 ######################### Global Variable Defines ##############################
 physical_sectors = []
 sectors = []
+chunks = []
 queue_list = []
 input_file = ''
 sector_size = 512
 block_size = 4096
 total_size = 2^30
 queue_entries = 8
+chunk_size = 2
 sectors_per_block = block_size/sector_size
 min_life_time = 0
 max_life_time = math.inf
@@ -22,6 +24,7 @@ max_life_time = math.inf
 def init():
     global physical_sector
     global sectors
+    global chunks
     global queue_list
     global input_file
     global sector_size

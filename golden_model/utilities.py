@@ -25,6 +25,14 @@ class SectorInfo():
         self.queue_num = []
         self.std_dev = 0
 
+# Struct for storing info for differnet sectors
+class ChunkInfo():
+
+    def __init__(self):
+        self.chunk_addr = 0
+        self.life_tuples = []
+        self.queue_num = []
+
 # Info for each physical sector
 class PhysicalSectorInfo():
 
@@ -57,8 +65,9 @@ def GetArgs(argv):
     found_input_file = False
 
     try:
-        opts, args = getopt.getopt(argv,"hi:s:b:t:q:",["ifile=", \
-        "sector_size", "block_size", "total_size", "queue_entries"])
+        opts, args = getopt.getopt(argv,"hi:s:b:t:q:c:",["ifile=", \
+        "sector_size", "block_size", "total_size", "queue_entries", \
+        "chunk_size"])
     except getopt.GetoptError:
         print ('ERROR: golden_model_gen.py')
         print ('    -i <globals.input_file>')
@@ -66,6 +75,7 @@ def GetArgs(argv):
         print ('    -b <block_size>')
         print ('    -t <total_size>')
         print ('    -q <queue_entries>')
+        print ('    -c <chunk_size in MB>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -83,7 +93,9 @@ def GetArgs(argv):
         elif opt in ("-t", "--globals.total_size"):
             globals.total_size = arg
         elif opt in ("-q", "--queue_entries"):
-            globals.queue_entries = arg
+            globals.queue_entries = int(arg)
+        elif opt in ("-c", "--chunk_size"):
+            globals.chunk_size = int(arg)
     if not found_input_file:
         print ("ERROR: -i was not given")
         sys.exit(2)
@@ -140,6 +152,28 @@ def CreatePhysicalSectors():
                     globals.physical_sectors[-1].death_time - \
                     globals.physical_sectors[-1].birth_time)
 
+# Find location for a particular chunk
+def GetChunkObj(chunk_address):
+    for chunk_no in range(len(globals.chunks)):
+        if chunk_address == globals.chunks[chunk_no].chunk_addr:
+            return chunk_no
+    globals.chunks.append(ChunkInfo())
+    globals.chunks[-1].chunk_addr = chunk_address
+    return (len(globals.chunks) - 1)
+
+# Create chunks for the grouping
+def CreateChunks():
+    for physical_sector in range(len(globals.physical_sectors)):
+        chunk_address = int(int(\
+                globals.physical_sectors[physical_sector].logical_sector_addr)\
+                / (globals.chunk_size * (2**20)))
+        chunk_no = GetChunkObj(chunk_address)
+        life_tuple = [globals.physical_sectors[physical_sector].birth_time, \
+            globals.physical_sectors[physical_sector].death_time - \
+            globals.physical_sectors[physical_sector].birth_time]
+        globals.chunks[chunk_no].life_tuples.append(life_tuple)
+        globals.chunks[chunk_no].life_tuples.sort(key=LifeTupleSortingFunc)
+
 # Calculate standard deviation for all sectors
 def CalculateStdDev():
     for logical_sector in range(len(globals.sectors)):
@@ -151,19 +185,9 @@ def CalculateStdDev():
 def TimeSortingFunc(elem):
     return elem.birth_time
 
-# Queue Allocation Function
-
-# Printing Debug Functions
-def PrintPhysicalSectors():
-    for x in range(len(globals.physical_sectors)):
-        print ("logical_addr = %s" % \
-                globals.physical_sectors[x].logical_sector_addr)
-        print ("physical_addr = %s" % \
-                globals.physical_sectors[x].physical_sector_addr)
-        print ("birth_time = %s" % globals.physical_sectors[x].birth_time)
-        print ("death_time = %s" % globals.physical_sectors[x].death_time)
-        print ("life_time = %s" % globals.physical_sectors[x].life_time)
-        print ("\n")
+# Function for sorting life_tuples of chunks
+def LifeTupleSortingFunc(elem):
+    return elem[0]
 
 # Create Graph values
 def CreateGraph():
@@ -238,6 +262,24 @@ def AllocateGoldenQueues():
                     allocated_queue = math.floor(current_life_time/queue_step)
                 globals.sectors[logical_sector].queue_num.append(allocated_queue)
 
+def AllocateGoldenQueuesChunks():
+
+    life_time_range = globals.max_life_time - globals.min_life_time
+    queue_step = life_time_range/(globals.queue_entries - 1)
+
+    for chunk_no in range(len(globals.chunks)):
+
+        if len(globals.chunks[chunk_no].life_tuples) > 0:
+            for tu in range(len(globals.chunks[chunk_no].life_tuples)):
+                current_life_time = \
+                    globals.chunks[chunk_no].life_tuples[tu][1]
+                allocated_queue = 0
+                if current_life_time == math.inf:
+                    allocated_queue = globals.queue_entries - 1
+                else:
+                    allocated_queue = math.floor(current_life_time/queue_step)
+                globals.chunks[chunk_no].queue_num.append(allocated_queue)
+
 def CreateQueues():
 
     for x in range(int(globals.queue_entries)):
@@ -253,6 +295,18 @@ def FindEmptyQueue():
 
     return empty_queue_list
 
+# Printing Debug Functions
+def PrintPhysicalSectors():
+    for x in range(len(globals.physical_sectors)):
+        print ("logical_addr = %s" % \
+                globals.physical_sectors[x].logical_sector_addr)
+        print ("physical_addr = %s" % \
+                globals.physical_sectors[x].physical_sector_addr)
+        print ("birth_time = %s" % globals.physical_sectors[x].birth_time)
+        print ("death_time = %s" % globals.physical_sectors[x].death_time)
+        print ("life_time = %s" % globals.physical_sectors[x].life_time)
+        print ("\n")
+
 def PrintAllocatedQueues():
     for x in range(len(globals.sectors)):
         print(globals.sectors[x].sector_addr, end="")
@@ -262,14 +316,31 @@ def PrintAllocatedQueues():
             print(" ", end="")
         print("")
 
+def PrintAllocatedQueuesChunks():
+    for x in range(len(globals.chunks)):
+        print(globals.chunks[x].chunk_addr, end="")
+        print(": ", end="")
+        for y in range(len(globals.chunks[x].queue_num)):
+            print(globals.chunks[x].queue_num[y], end="")
+            print(" ", end="")
+        print("")
+
 def PrintLogicalSectors():
     for x in range(len(globals.sectors)):
         print ("sector_addr = %s" % globals.sectors[x].sector_addr)
         print ("operation_times = %s" % globals.sectors[x].operation_times)
         print ("operations = %s" % globals.sectors[x].operation_type)
         print ("life_times = %s" % globals.sectors[x].life_times)
+        print ("life_times_sizes = %s" % len(globals.sectors[x].life_times))
         print ("allocated_queues = %s" % globals.sectors[x].queue_num)
         print ("life_time_std_dev = %s" % globals.sectors[x].std_dev)
+
+def PrintChunks():
+    for x in range(len(globals.chunks)):
+        print ("chunk_addr = %s" % globals.chunks[x].chunk_addr)
+        print ("life_tuples = %s" % globals.chunks[x].life_tuples)
+        print ("life_tuples_sizes = %s" % len(globals.chunks[x].life_tuples))
+        print ("allocated_queues = %s" % globals.chunks[x].queue_num)
 
 def PrintMetaInfo():
     print (globals.sector_size, globals.block_size, globals.sectors_per_block)
