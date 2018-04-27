@@ -15,11 +15,11 @@ from pyreuse.sysutils.straceParser import parse_and_write_dirty_table
 
 testname_dict = {
     'rocksdb_reqscale': [
-        'rocksdb_reqscale_r_seq',
-        'rocksdb_reqscale_r_rand',
-        'rocksdb_reqscale_r_mix',
-        'rocksdb_reqscale_w_seq',
-        'rocksdb_reqscale_w_rand',
+#        'rocksdb_reqscale_r_seq',
+#        'rocksdb_reqscale_r_rand',
+#        'rocksdb_reqscale_r_mix',
+#        'rocksdb_reqscale_w_seq',
+#        'rocksdb_reqscale_w_rand',
         'rocksdb_reqscale_w_mix'
         ],
 
@@ -43,18 +43,18 @@ testname_dict = {
         ],
 
     'sqlitewal_reqscale': [
-        'sqliteWAL_reqscale_r_seq',
-        'sqliteWAL_reqscale_r_rand',
-        'sqliteWAL_reqscale_r_mix',
+#        'sqliteWAL_reqscale_r_seq',
+#        'sqliteWAL_reqscale_r_rand',
+#        'sqliteWAL_reqscale_r_mix',
         'sqliteWAL_reqscale_w_seq',
         'sqliteWAL_reqscale_w_rand',
         'sqliteWAL_reqscale_w_mix'
         ],
 
     'sqliterb_reqscale': [
-        'sqliteRB_reqscale_r_seq',
-        'sqliteRB_reqscale_r_rand',
-        'sqliteRB_reqscale_r_mix',
+#        'sqliteRB_reqscale_r_seq',
+#        'sqliteRB_reqscale_r_rand',
+#        'sqliteRB_reqscale_r_mix',
         'sqliteRB_reqscale_w_seq',
         'sqliteRB_reqscale_w_rand',
         'sqliteRB_reqscale_w_mix'
@@ -129,8 +129,8 @@ def appmixbench_for_rw(testsetname, expname):
     para_pool = ParameterPool(
             expname = expname,
             testname = testname_dict[testsetname],
-            filesystem = ['ext4', 'f2fs', 'xfs']
-            # filesystem = ['ext4']
+            # filesystem = ['ext4', 'f2fs', 'xfs']
+            filesystem = ['ext4']
             )
 
     for para in para_pool:
@@ -193,12 +193,14 @@ def simulate_from_event_files(app=None, rule=None, expname=None):
 
     appmap = {
             # value is a exp_rel_path
-            'rocksdb': 'rocksdb-reqscale',
-            'leveldb': 'leveldb-reqscale-001',
-            'sqlitewal': 'sqlitewal-reqscale-240000-inserts-3',
-            'sqliterb': 'sqliterb-reqscale-240000-insertions-4',
-            'varmail': 'varmail-reqscale-002',
-            'tmp': 'rocks_and_level_write_noOOS2/subexp-3959790978413626819-f2fs-10-10-16-41-16--4009885425202000064',
+            #'rocksdb': 'rocksdb-reqscale',
+            #'leveldb': 'leveldb-reqscale-001',
+            #'sqlitewal': 'sqlitewal-reqscale-240000-inserts-3',
+            'sqliterb_reqscale': 'sqliterb_reqscale',
+            'sqlitewal_reqscale': 'sqlitewal_reqscale',
+            'rocksNlevelwrite_reqscale': 'rocksNlevelwrite_reqscale'
+            #'varmail': 'varmail-reqscale-002',
+            #'tmp': 'rocks_and_level_write_noOOS2/subexp-3959790978413626819-f2fs-10-10-16-41-16--4009885425202000064',
             }
 
     table =\
