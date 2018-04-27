@@ -1,8 +1,7 @@
-
+import math
 """
 Available options from events file to predict upon.
 ['pid', 'action', 'operation', 'offset', 'size', 'timestamp', 'pre_wait_time', 'sync']
-
 Right now the state has to be mantained here in the class, and only current
 event will be provided as an argument
 """
@@ -140,3 +139,66 @@ class markov_predictor:
 # print(pred.predict("0 0 0 1024 2048 2.000 0 0"))
 # print(pred.predict("0 0 0 1024 2048 2.000 0 0"))
 # print(pred.predict("0 0 0 1024 2048 2.000 0 0"))
+
+"""
+PPM predictor
+
+Assign each LBA a initial state (e.g. coldest queue), also
+record past life time history (quantized as queue numbers)
+to determine future outcome
+
+Further assume 0 being the hottest queue and num_of_channel-1 as
+the coldest queue. Always assign the data to be the coldest queue
+"""
+
+class ppm_predictor:
+	def __init__(self, num_of_channel, ctx_length):
+		self.ctx_length = ctx_length
+		self.table = [dict() for i in range(ctx_length+2)] # {-1, ..., ctx_length}
+		self.table[0][''] = dict()
+		self.history = '' # create an empty history record
+		for i in range(self.ctx_length):
+		  self.table[0][''][i] = 1
+
+	def predict(self, ctx, s, impossible):
+		if ctx in self.table[s+1]:
+			cp = self.table[s+1][ctx].copy()
+			for key in impossible:
+				if key in cp:
+					cp.pop(key)
+			distinct = 0 if s == -1 else len(cp.keys())
+			csum = sum(cp.values())
+			# search next symbol
+			next_symbol = 0
+			next_prob = 0.0
+			for i in range(self.ctx_length):
+				if i in cp:
+					if float(cp[i]) > next_prob:
+						next_prob = float(cp[i])
+						next_symbol = i
+			return next_symbol
+		else:
+			return self.predict(ctx[1:], s-1, impossible)
+
+
+	def update(self, c, ctx):
+	    for i in range(0,len(ctx)+1):
+	        pre = ctx[i:]
+	        s = len(pre)
+	        if pre not in self.table[s+1]:
+	            self.table[s+1][pre] = dict()
+	        if c not in self.table[s+1][pre]:
+	              self.table[s+1][pre][c] = 0
+	        self.table[s+1][pre][c] += 1
+	    # update the history record
+	    if len(self.history) == self.ctx_length:
+	    	self.history = self.history[1:] + str(c)
+	    else:
+	    	self.history = self.history + str(c)
+
+
+# msg = '01201201201201201232432432412012324'
+# pred = ppm_predictor(5, 5)
+# for i in range(len(msg)):
+# 	print("predicted: "+str(pred.predict(pred.history, len(pred.history), []))+"  actual: "+msg[i])
+# 	pred.update(int(msg[i]), pred.history)
